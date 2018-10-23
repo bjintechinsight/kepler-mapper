@@ -5,13 +5,20 @@ import json
 from collections import defaultdict
 
 
+# palette = [
+#     '#0500ff', '#0300ff', '#0100ff', '#0002ff', '#0022ff', '#0044ff',
+#     '#0064ff', '#0084ff', '#00a4ff', '#00a4ff', '#00c4ff', '#00e4ff',
+#     '#00ffd0', '#00ff83', '#00ff36', '#17ff00', '#65ff00', '#b0ff00',
+#     '#fdff00', '#FFf000', '#FFdc00', '#FFc800', '#FFb400', '#FFa000',
+#     '#FF8c00', '#FF7800', '#FF6400', '#FF5000', '#FF3c00', '#FF2800',
+#     '#FF1400', '#FF0000'
+# ]
+
 palette = [
-    '#0500ff', '#0300ff', '#0100ff', '#0002ff', '#0022ff', '#0044ff',
-    '#0064ff', '#0084ff', '#00a4ff', '#00a4ff', '#00c4ff', '#00e4ff',
-    '#00ffd0', '#00ff83', '#00ff36', '#17ff00', '#65ff00', '#b0ff00',
-    '#fdff00', '#FFf000', '#FFdc00', '#FFc800', '#FFb400', '#FFa000',
-    '#FF8c00', '#FF7800', '#FF6400', '#FF5000', '#FF3c00', '#FF2800',
-    '#FF1400', '#FF0000'
+    '#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c',
+    '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5',
+    '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f',
+    '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5'
 ]
 
 
@@ -213,7 +220,7 @@ def _format_tooltip(env, member_ids, custom_tooltips, X,
         histogram=histogram,
         dist_label="Member",
         node_id=node_ID)
-   
+
     return tooltip
 
 
