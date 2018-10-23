@@ -71,7 +71,7 @@ def format_mapper_data(graph, labels_value, labels_name, X,
     return json_dict
 
 def _get_color(lst):
-    idx = _get_color_idx(lst)
+    idx = _get_color_idx(list(lst))
     return palette[idx]
 
 def _get_color_idx(lst):

@@ -460,7 +460,7 @@ class KeplerMapper(object):
         path_html : String
             file name for outputing the resulting html.
 
-        labels_value: list of int
+        labels_value: numpy vector of int
             the label value of each sample, used for colorlization
 
         labels_name: list of string
