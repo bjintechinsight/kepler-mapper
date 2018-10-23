@@ -71,10 +71,11 @@ def format_mapper_data(graph, labels_value, labels_name, X,
     return json_dict
 
 def _get_color(lst):
-    idx = _get_color_idx(list(lst))
+    idx = _get_color_idx(lst)
     return palette[idx]
 
 def _get_color_idx(lst):
+    lst = list(lst)
     ## get the dominate label, ignore label > 20
     lst_s = [x for x in lst if x < 20 ]
     if lst_s:
