@@ -17,7 +17,7 @@ from scipy.sparse import issparse
 
 from .cover import Cover
 from .nerve import GraphNerve
-from .visuals import init_color_function, format_meta, format_mapper_data, build_histogram, graph_data_distribution
+from .visuals import format_meta, format_mapper_data, build_histogram, graph_data_distribution
 
 
 class KeplerMapper(object):
