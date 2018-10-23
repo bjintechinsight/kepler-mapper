@@ -18,24 +18,9 @@ palette = [
     '#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c',
     '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5',
     '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f',
-    '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5'
+    '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5',
+    '#808080', '#000000'
 ]
-
-
-def init_color_function(graph, color_function=None):
-    # If no color_function provided we color by row order in data set
-    # Reshaping to 2-D array is required for sklearn 0.19
-    n_samples = np.max([i for s in graph["nodes"].values() for i in s]) + 1
-    if color_function is None:
-        color_function = np.arange(n_samples).reshape(-1, 1)
-    else:
-        color_function = color_function.reshape(-1, 1)
-
-    color_function = color_function.astype(np.float64)
-    # MinMax Scaling to be friendly to non-scaled input.
-    scaler = preprocessing.MinMaxScaler()
-    color_function = scaler.fit_transform(color_function).ravel()
-    return color_function
 
 
 def format_meta(graph, custom_meta=None):
@@ -56,17 +41,18 @@ def format_meta(graph, custom_meta=None):
     return mapper_summary
 
 
-def format_mapper_data(graph, color_function, X,
+def format_mapper_data(graph, labels_value, labels_name, X,
                        X_names, lens, lens_names, custom_tooltips, env):
     # import pdb; pdb.set_trace()
     json_dict = {"nodes": [], "links": []}
     node_id_to_num = {}
     for i, (node_id, member_ids) in enumerate(graph["nodes"].items()):
         node_id_to_num[node_id] = i
-        c = _color_function(member_ids, color_function)
+        # c = _color_function(member_ids, color_function)
+        c = _get_color_idx(labels_value[member_ids])
         t = _type_node()
         s = _size_node(member_ids)
-        tt = _format_tooltip(env, member_ids, custom_tooltips, X, X_names, lens, lens_names, color_function, node_id)
+        tt = _format_tooltip(env, member_ids, custom_tooltips, X, X_names, lens, lens_names, labels_value, labels_name, node_id)
 
         n = {"id": "",
              "name": node_id,
@@ -84,39 +70,74 @@ def format_mapper_data(graph, color_function, X,
             json_dict["links"].append(l)
     return json_dict
 
+def _get_color(lst):
+    idx = _get_color_idx(lst)
+    return palette[idx]
 
-def build_histogram(data):
-    # Build histogram of data based on values of color_function
+def _get_color_idx(lst):
+    ## get the dominate label, ignore label > 20
+    lst_s = [x for x in lst if x < 20 ]
+    if lst_s:
+        main_label_value = max(set(lst_s), key=lst.count)
+    else:
+        main_label_value = max(set(lst), key=lst.count)
 
-    h_min, h_max = 0, 1
-    hist, bin_edges = np.histogram(data, range=(h_min, h_max), bins=10)
+    return main_label_value
 
-    bin_mids = np.mean(np.array(list(zip(bin_edges, bin_edges[1:]))), axis=1)
+def _format_tooltip(env, member_ids, custom_tooltips, X,
+                    X_names, lens, lens_names, labels_value, labels_name, node_ID):
+    # TODO: Allow customization in the form of aggregate per node and per entry in node.
+    # TODO: Allow users to turn off tooltip completely.
+
+    custom_tooltips = custom_tooltips[member_ids] if custom_tooltips is not None else member_ids
+
+    # list will render better than numpy arrays
+    custom_tooltips = list(custom_tooltips)
+
+    projection_stats = _format_projection_statistics(
+        member_ids, lens, lens_names)
+    cluster_stats = _format_cluster_statistics(member_ids, X, X_names)
+
+    histogram = build_histogram(labels_value[member_ids], labels_value, labels_name)
+
+    tooltip = env.get_template('cluster_tooltip.html').render(
+        projection_stats=projection_stats,
+        cluster_stats=cluster_stats,
+        custom_tooltips=custom_tooltips,
+        histogram=histogram,
+        dist_label="Member",
+        node_id=node_ID)
+
+    return tooltip
+
+
+def build_histogram(data, labels_value, labels_name):
+    # Build histogram of data based on values of labels
+    hist = np.histogram(data, range=(min(labels_value), max(labels_value)), bins=len(np.unique(labels_value))) ## one bin per unique value
 
     histogram = []
     max_bucket_value = max(hist)
-    sum_bucket_value = sum(hist)
-    for bar, mid in zip(hist, bin_mids):
+    # sum_bucket_value = sum(hist)
+    for bar, l_value, l_name in zip(hist, labels_value, labels_name):
         height = int(((bar / max_bucket_value) * 100) + 1)
-        perc = round((bar / sum_bucket_value) * 100., 1)
-        color = palette[_color_idx(mid)]
+        # perc = round((bar / sum_bucket_value) * 100., 1)
+        color = palette[l_value]
 
         histogram.append({
             'height': height,
-            'perc': perc,
+            'label': l_name,
             'color': color
         })
     return histogram
 
 
-def graph_data_distribution(graph, color_function):
+def graph_data_distribution(graph, labels_value, labels_name):
 
-    node_averages = []
+    node_label = []
     for node_id, member_ids in graph["nodes"].items():
-        member_colors = color_function[member_ids]
-        node_averages.append(np.mean(member_colors))
+        node_label.append(_get_color_idx(labels_value[member_ids]))
 
-    histogram = build_histogram(node_averages)
+    histogram = build_histogram(node_label, labels_value, labels_name)
 
     return histogram
 
@@ -197,45 +218,20 @@ def _format_projection_statistics(member_ids, lens, lens_names):
     return projection_data
 
 
-def _format_tooltip(env, member_ids, custom_tooltips, X,
-                    X_names, lens, lens_names, color_function, node_ID):
-    # TODO: Allow customization in the form of aggregate per node and per entry in node.
-    # TODO: Allow users to turn off tooltip completely.
 
-    custom_tooltips = custom_tooltips[member_ids] if custom_tooltips is not None else member_ids
-
-    # list will render better than numpy arrays
-    custom_tooltips = list(custom_tooltips)
-
-    projection_stats = _format_projection_statistics(
-        member_ids, lens, lens_names)
-    cluster_stats = _format_cluster_statistics(member_ids, X, X_names)
-
-    histogram = build_histogram(color_function[member_ids])
-
-    tooltip = env.get_template('cluster_tooltip.html').render(
-        projection_stats=projection_stats,
-        cluster_stats=cluster_stats,
-        custom_tooltips=custom_tooltips,
-        histogram=histogram,
-        dist_label="Member",
-        node_id=node_ID)
-
-    return tooltip
+# def _color_function(member_ids, color_function):
+#     return _color_idx(np.mean(color_function[member_ids]))
+#     # return int(np.mean(color_function[member_ids]) * 30)
 
 
-def _color_function(member_ids, color_function):
-    return _color_idx(np.mean(color_function[member_ids]))
-    # return int(np.mean(color_function[member_ids]) * 30)
-
-
-def _color_idx(val):
-    """ Take a value between 0 and 1 and return the idx of color """
-    return int(val * 30)
+# def _color_idx(val):
+#     """ Take a value between 0 and 1 and return the idx of color """
+#     return int(val * 30)
 
 
 def _size_node(member_ids):
-    return int(np.log(len(member_ids) + 1) + 1)
+    # increase the node size for better visualiztion of color
+    return int(np.log(len(member_ids) + 1) + 1) + 5
 
 
 def _type_node():

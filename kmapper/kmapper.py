@@ -34,8 +34,8 @@ class KeplerMapper(object):
 
     KM has a number of nice features, some which get forgotten.
         - project : Some projections it makes sense to use a distance matrix, such as knn_distance_#. Using `distance_matrix = <metric>` for a custom metric.
-        - fit_transform : Applies a sequence of projections. Currently, this API is a little confusing and will be changed in the future. 
-        - 
+        - fit_transform : Applies a sequence of projections. Currently, this API is a little confusing and will be changed in the future.
+        -
 
 
     """
@@ -47,7 +47,7 @@ class KeplerMapper(object):
 
         verbose: int, default is 0
             Logging level. Currently 3 levels (0,1,2) are supported.
-                - for no logging, set `verbose=0`, 
+                - for no logging, set `verbose=0`,
                 - for some logging, set `verbose=1`,
                 - for complete logging, set `verbose=2`
         """
@@ -78,7 +78,7 @@ class KeplerMapper(object):
             Scaler of the data applied before mapping. Use None for no scaling. Default = preprocessing.MinMaxScaler() if None, do no scaling, else apply scaling to the projection. Default: Min-Max scaling
 
         distance_matrix : Either str or None
-            If not None, then any of ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine", "dice", "euclidean", "hamming", "jaccard", "kulsinski", "mahalanobis", "matching", "minkowski", "rogerstanimoto", "russellrao", "seuclidean", "sokalmichener", "sokalsneath", "sqeuclidean", "yule"]. 
+            If not None, then any of ["braycurtis", "canberra", "chebyshev", "cityblock", "correlation", "cosine", "dice", "euclidean", "hamming", "jaccard", "kulsinski", "mahalanobis", "matching", "minkowski", "rogerstanimoto", "russellrao", "seuclidean", "sokalmichener", "sokalsneath", "sqeuclidean", "yule"].
             If False do nothing, else create a squared distance matrix with the chosen metric, before applying the projection.
 
         Returns
@@ -135,7 +135,7 @@ class KeplerMapper(object):
         if isinstance(projection, str):
             if self.verbose > 0:
                 print("\n..Projecting data using: %s" % (projection))
-            
+
             def dist_mean(X, axis=1):
                 X_mean = np.mean(X, axis=0)
                 X = np.sum(np.sqrt((X - X_mean)**2), axis=1)
@@ -275,7 +275,7 @@ class KeplerMapper(object):
         precomputed : Boolean
             Tell Mapper whether the data that you are clustering on is a precomputed distance matrix. If set to
             `True`, the assumption is that you are also telling your `clusterer` that `metric='precomputed'` (which
-            is an argument for DBSCAN among others), which 
+            is an argument for DBSCAN among others), which
             will then cause the clusterer to expect a square distance matrix for each hypercube. `precomputed=True` will give a square matrix
             to the clusterer to fit on for each hypercube.
 
@@ -347,12 +347,12 @@ class KeplerMapper(object):
         # to adjust for the minimal number of samples inside an interval before
         # we consider clustering or skipping it.
         cluster_params = clusterer.get_params()
-        
-        min_cluster_samples = cluster_params.get("n_clusters", 
-            cluster_params.get("min_cluster_size", 
-            cluster_params.get("min_samples", 
+
+        min_cluster_samples = cluster_params.get("n_clusters",
+            cluster_params.get("min_cluster_size",
+            cluster_params.get("min_samples",
             1)))
-        
+
         if self.verbose > 1:
             print("Minimal points in hypercube before clustering: %d" %
                   (min_cluster_samples))
@@ -378,11 +378,11 @@ class KeplerMapper(object):
                 # Note that we apply clustering on the inverse image (original data samples) that fall inside the cube.
                 ids = [int(nn) for nn in hypercube[:, 0]]
                 X_cube = X[ids]
-                
+
                 fit_data = X_cube[:, 1:]
                 if precomputed:
                     fit_data = fit_data[:, ids]
-                    
+
                 cluster_predictions = clusterer.fit_predict(fit_data)
 
                 if self.verbose > 1:
@@ -438,7 +438,8 @@ class KeplerMapper(object):
 
     def visualize(self,
                   graph,
-                  color_function=None,
+                  labels_value=None,
+                  labels_name=None,
                   custom_tooltips=None,
                   custom_meta=None,
                   path_html="mapper_visualization_output.html",
@@ -459,8 +460,14 @@ class KeplerMapper(object):
         path_html : String
             file name for outputing the resulting html.
 
+        labels_value: list of int
+            the label value of each sample, used for colorlization
+
+        labels_name: list of string
+            the label name of each sample, used for colorlization
+
         custom_meta: dict
-            Render (key, value) in the Mapper Summary pane. 
+            Render (key, value) in the Mapper Summary pane.
 
         custom_tooltip: list or array like
             Value to display for each entry in the node. The cluster data pane will display entry for all values in the node. Default is index of data.
@@ -491,7 +498,7 @@ class KeplerMapper(object):
         Examples
         -------
         >>> mapper.visualize(simplicial_complex, path_html="mapper_visualization_output.html",
-                            custom_meta={'Data': 'MNIST handwritten digits', 
+                            custom_meta={'Data': 'MNIST handwritten digits',
                                          'Created by': 'Franklin Roosevelt'
                             }, )
         """
@@ -506,14 +513,14 @@ class KeplerMapper(object):
         # Find the module absolute path and locate templates
         module_root = os.path.join(os.path.dirname(__file__), 'templates')
         env = Environment(loader=FileSystemLoader(module_root))
-        # Color function is a vector of colors?
-        color_function = init_color_function(graph, color_function)
+        # # Color function is a vector of colors?
+        # color_function = init_color_function(graph, color_function)
 
-        mapper_data = format_mapper_data(graph, color_function, X,
+        mapper_data = format_mapper_data(graph, labels_value, labels_name, X,
                                          X_names, lens,
                                          lens_names, custom_tooltips, env)
 
-        histogram = graph_data_distribution(graph, color_function)
+        histogram = graph_data_distribution(graph, labels_value, labels_name)
 
         mapper_summary = format_meta(graph, custom_meta)
 

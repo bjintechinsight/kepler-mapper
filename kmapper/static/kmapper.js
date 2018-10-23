@@ -31,11 +31,15 @@ var size = d3.scale.pow().exponent(1)
 //   '#FF1400', '#FF0000'
 // ];
 var palette = [
-    '#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', 
-    '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', 
-    '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f', 
-    '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5'
+    '#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c',
+    '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5',
+    '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f',
+    '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5',
+    '#808080', '#000000', '#0500ff', '#0300ff', '#0100ff',
+    '#0002ff', '#0022ff', '#0044ff', '#0064ff', '#0084ff',
+    '#FF0000'
 ];
+// tab20 color palette + gray + black + another random 9 colors
 
 
 // Variety of variable inits
@@ -102,21 +106,21 @@ var toggle_pane = function(content, content_id, tag){
 }
 
 d3.select("#tooltip_control").on("click", function() {
-  toggle_pane(tooltip_content, 
-              d3.select("#tooltip_content"), 
+  toggle_pane(tooltip_content,
+              d3.select("#tooltip_content"),
               d3.select("#tooltip_tag")[0][0]);
 
 });
 
 d3.select("#meta_control").on("click", function() {
-  toggle_pane(meta_content, 
+  toggle_pane(meta_content,
               d3.select("#meta_content"),
               d3.select("#meta_tag")[0][0])
 
 });
 
 d3.select("#help_control").on("click", function() {
-  toggle_pane(helptip_content, 
+  toggle_pane(helptip_content,
               d3.select("#helptip_content"),
               d3.select("#helptip_tag")[0][0])
 });
@@ -145,7 +149,7 @@ var color = d3.scale.ordinal()
 
 var graph = JSON.parse(document.getElementById("json_graph").dataset.graph);
 
-              
+
 // Force settings
 var force = d3.layout.force()
             .linkDistance(5)
@@ -227,7 +231,7 @@ var circle = node.append("path")
 //.style("filter", "url(#drop-shadow)");
 
 
-// Format all text 
+// Format all text
 var text = g.selectAll(".text")
   .data(graph.nodes)
   .enter().append("text")
