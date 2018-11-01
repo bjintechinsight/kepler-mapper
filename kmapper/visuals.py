@@ -1,4 +1,4 @@
- # A small helper class to house functions needed by KeplerMapper.visualize
+# A small helper class to house functions needed by KeplerMapper.visualize
 import numpy as np
 from sklearn import preprocessing
 import json
@@ -51,7 +51,7 @@ def format_mapper_data(graph, labels, colors, X,
     for i, (node_id, member_ids) in enumerate(graph["nodes"].items()):
         node_id_to_num[node_id] = i
         # c = _color_function(member_ids, color_function)
-        c = _get_color_idx(labels[member_ids], all_labels, colors)
+        c = _get_max_label_color_idx(labels[member_ids], all_labels, colors)
         t = _type_node()
         s = _size_node(member_ids)
         tt = _format_tooltip(env, member_ids, custom_tooltips, X, X_names, lens, lens_names, labels, colors, node_id)
@@ -76,7 +76,6 @@ def format_mapper_data(graph, labels, colors, X,
 def _get_color(lst):
     idx = _get_color_idx(lst)
     return palette[idx]
-
 
 def _get_max_label_color_idx(lst, all_labels, colors):
     max_label = _get_max_label(lst)
