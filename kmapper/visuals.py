@@ -88,7 +88,7 @@ def _get_max_label(lst):
     max_label = max(set(lst), key=lst.count)
 
     ## find the label with maximum appearance, apart from unused and shared
-    lst = [x if x is not 'Unused' or 'Shared' for x in lst]
+    lst = [x for x in lst if x != 'Unused' and x != 'Shared']
     if lst:
         max_label = max(set(lst), key=lst.count)
 
