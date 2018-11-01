@@ -169,7 +169,7 @@ def graph_data_distribution(labels, colors):
     all_labels = list(set(list(labels)))
     all_labels.sort()
 
-    histogram = build_histogram(labels, all_labels, colors):
+    histogram = build_histogram(labels, all_labels, colors)
     return histogram
 
 
