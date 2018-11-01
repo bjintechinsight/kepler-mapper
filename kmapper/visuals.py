@@ -154,7 +154,7 @@ def build_histogram(data, all_labels, colors):
         else:
             height = 0
 
-        color = _get_color_idx(l, all_labels, colors):
+        color = _get_color_idx(l, all_labels, colors)
         color = palette[color]
 
         histogram.append({
