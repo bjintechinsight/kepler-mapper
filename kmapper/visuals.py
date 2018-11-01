@@ -1,8 +1,8 @@
-# A small helper class to house functions needed by KeplerMapper.visualize
+ # A small helper class to house functions needed by KeplerMapper.visualize
 import numpy as np
 from sklearn import preprocessing
 import json
-from collections import defaultdict
+from collections import Counter
 
 
 # palette = [
@@ -41,18 +41,20 @@ def format_meta(graph, custom_meta=None):
     return mapper_summary
 
 
-def format_mapper_data(graph, labels_value, labels_name, X,
+def format_mapper_data(graph, labels, colors, X,
                        X_names, lens, lens_names, custom_tooltips, env):
     # import pdb; pdb.set_trace()
     json_dict = {"nodes": [], "links": []}
     node_id_to_num = {}
+    all_labels = list(set(list(labels)))
+    all_labels.sort()
     for i, (node_id, member_ids) in enumerate(graph["nodes"].items()):
         node_id_to_num[node_id] = i
         # c = _color_function(member_ids, color_function)
-        c = _get_color_idx(labels_value[member_ids])
+        c = _get_color_idx(labels[member_ids], all_labels, colors)
         t = _type_node()
         s = _size_node(member_ids)
-        tt = _format_tooltip(env, member_ids, custom_tooltips, X, X_names, lens, lens_names, labels_value, labels_name, node_id)
+        tt = _format_tooltip(env, member_ids, custom_tooltips, X, X_names, lens, lens_names, labels, colors, node_id)
 
         n = {"id": "",
              "name": node_id,
@@ -62,6 +64,7 @@ def format_mapper_data(graph, labels_value, labels_name, X,
              "tooltip": tt}
 
         json_dict["nodes"].append(n)
+
     for i, (node_id, linked_node_ids) in enumerate(graph["links"].items()):
         for linked_node_id in linked_node_ids:
             l = {"source": node_id_to_num[node_id],
@@ -74,19 +77,40 @@ def _get_color(lst):
     idx = _get_color_idx(lst)
     return palette[idx]
 
-def _get_color_idx(lst):
-    lst = list(lst)
-    ## get the dominate label, ignore label > 20
-    lst_s = [x for x in lst if x < 20 ]
-    if lst_s:
-        main_label_value = max(set(lst_s), key=lst.count)
-    else:
-        main_label_value = max(set(lst), key=lst.count)
 
-    return main_label_value
+def _get_max_label_color_idx(lst, all_labels, colors):
+    max_label = _get_max_label(lst)
+    idx = _get_color_idx(max_label, all_labels, colors)
+    return idx
+
+def _get_max_label(lst):
+    lst = list(lst)
+
+    max_label = max(set(lst), key=lst.count)
+
+    ## find the label with maximum appearance, apart from unused and shared
+    lst = [x if x is not 'Unused' or 'Shared' for x in lst]
+    if lst:
+        max_label = max(set(lst), key=lst.count)
+
+    return max_label
+
+def _get_color_idx(max_label, all_labels, colors):
+    ## get the index of the label in all labels, which is also the index of the color palette
+    if max_label in colors.keys():
+        idx = (colors[max_label])
+    else:
+        idx = all_labels.index(max_label)
+
+    if idx == 'gray':
+        idx = 20
+    elif idx == 'black':
+        idx = 21
+
+    return idx
 
 def _format_tooltip(env, member_ids, custom_tooltips, X,
-                    X_names, lens, lens_names, labels_value, labels_name, node_ID):
+                    X_names, lens, lens_names, labels, colors, node_ID):
     # TODO: Allow customization in the form of aggregate per node and per entry in node.
     # TODO: Allow users to turn off tooltip completely.
 
@@ -99,7 +123,9 @@ def _format_tooltip(env, member_ids, custom_tooltips, X,
         member_ids, lens, lens_names)
     cluster_stats = _format_cluster_statistics(member_ids, X, X_names)
 
-    histogram = build_histogram(labels_value[member_ids], labels_value, labels_name)
+    all_labels = list(set(list(labels)))
+    all_labels.sort()
+    histogram = build_histogram(labels[member_ids], all_labels, colors)
 
     tooltip = env.get_template('cluster_tooltip.html').render(
         projection_stats=projection_stats,
@@ -112,34 +138,38 @@ def _format_tooltip(env, member_ids, custom_tooltips, X,
     return tooltip
 
 
-def build_histogram(data, labels_value, labels_name):
+def build_histogram(data, all_labels, colors):
     # Build histogram of data based on values of labels
-    hist = np.histogram(data, range=(min(labels_value), max(labels_value)), bins=len(np.unique(labels_value))) ## one bin per unique value
+    hst = dict(Counter(data))
+    # hist = np.histogram(data, range=(min(labels_value), max(labels_value)), bins=len(np.unique(labels_value))) ## one bin per unique value
 
     histogram = []
-    max_bucket_value = max(hist)
+    max_bucket_value = max(hst.values())
     # sum_bucket_value = sum(hist)
-    for bar, l_value, l_name in zip(hist, labels_value, labels_name):
-        height = int(((bar / max_bucket_value) * 100) + 1)
-        # perc = round((bar / sum_bucket_value) * 100., 1)
-        color = palette[l_value]
+    for l in all_labels:
+        if l in hst:
+            bar = hst[l]
+            height = int(((bar / max_bucket_value) * 100) + 1)
+            # perc = round((bar / sum_bucket_value) * 100., 1)
+        else:
+            height = 0
+
+        color = _get_color_idx(l, all_labels, colors):
+        color = palette[color]
 
         histogram.append({
             'height': height,
-            'label': l_name,
+            'label': l,
             'color': color
         })
     return histogram
 
 
-def graph_data_distribution(graph, labels_value, labels_name):
+def graph_data_distribution(labels, colors):
+    all_labels = list(set(list(labels)))
+    all_labels.sort()
 
-    node_label = []
-    for node_id, member_ids in graph["nodes"].items():
-        node_label.append(_get_color_idx(labels_value[member_ids]))
-
-    histogram = build_histogram(node_label, labels_value, labels_name)
-
+    histogram = build_histogram(labels, all_labels, colors):
     return histogram
 
 

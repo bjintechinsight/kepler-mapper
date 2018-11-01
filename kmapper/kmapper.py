@@ -438,8 +438,9 @@ class KeplerMapper(object):
 
     def visualize(self,
                   graph,
-                  labels_value=None,
+                  labels=None,
                   labels_name=None,
+                  color=None,
                   custom_tooltips=None,
                   custom_meta=None,
                   path_html="mapper_visualization_output.html",
@@ -460,11 +461,11 @@ class KeplerMapper(object):
         path_html : String
             file name for outputing the resulting html.
 
-        labels_value: numpy vector of int
-            the label value of each sample, used for colorlization
+        labels: numpy array of category(string, int, etc.)
+            the label of each sample, used for colorlization
 
-        labels_name: list of string
-            the label name of each sample, used for colorlization
+        colors: dictionary
+            the pre-defined color for certain label, if not assigned, use the default color palette
 
         custom_meta: dict
             Render (key, value) in the Mapper Summary pane.
@@ -516,11 +517,11 @@ class KeplerMapper(object):
         # # Color function is a vector of colors?
         # color_function = init_color_function(graph, color_function)
 
-        mapper_data = format_mapper_data(graph, labels_value, labels_name, X,
+        mapper_data = format_mapper_data(graph, labels, colors, X,
                                          X_names, lens,
                                          lens_names, custom_tooltips, env)
 
-        histogram = graph_data_distribution(graph, labels_value, labels_name)
+        histogram = graph_data_distribution(labels, colors)
 
         mapper_summary = format_meta(graph, custom_meta)
 
