@@ -57,7 +57,7 @@ def format_mapper_data(graph, labels, all_labels, colors, X,
         c = _get_max_label_color_idx(labels[member_ids], all_labels, colors)
         t = _type_node()
         s = _size_node(member_ids)
-        tt = _format_tooltip(env, member_ids, custom_tooltips, X, X_names, lens, lens_names, labels, all_labels colors, node_id)
+        tt = _format_tooltip(env, member_ids, custom_tooltips, X, X_names, lens, lens_names, labels, all_labels, colors, node_id)
 
         n = {"id": "",
              "name": node_id,
