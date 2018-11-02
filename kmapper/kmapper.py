@@ -440,6 +440,7 @@ class KeplerMapper(object):
                   graph,
                   labels=None,
                   labels_name=None,
+                  all_labels=None,
                   colors=None,
                   custom_tooltips=None,
                   custom_meta=None,
@@ -463,6 +464,9 @@ class KeplerMapper(object):
 
         labels: numpy array of category(string, int, etc.)
             the label of each sample, used for colorlization
+
+        all_labels: list of category(string, int, etc.)
+            the order of labels when ploting histogram
 
         colors: dictionary
             the pre-defined color for certain label, if not assigned, use the default color palette
@@ -517,11 +521,11 @@ class KeplerMapper(object):
         # # Color function is a vector of colors?
         # color_function = init_color_function(graph, color_function)
 
-        mapper_data = format_mapper_data(graph, labels, colors, X,
+        mapper_data = format_mapper_data(graph, labels, all_labels, colors, X,
                                          X_names, lens,
                                          lens_names, custom_tooltips, env)
 
-        histogram = graph_data_distribution(labels, colors)
+        histogram = graph_data_distribution(labels, all_labels, colors)
 
         mapper_summary = format_meta(graph, custom_meta)
 

@@ -41,20 +41,23 @@ def format_meta(graph, custom_meta=None):
     return mapper_summary
 
 
-def format_mapper_data(graph, labels, colors, X,
+def format_mapper_data(graph, labels, all_labels, colors, X,
                        X_names, lens, lens_names, custom_tooltips, env):
     # import pdb; pdb.set_trace()
     json_dict = {"nodes": [], "links": []}
     node_id_to_num = {}
-    all_labels = list(set(list(labels)))
-    all_labels.sort()
+
+    if not all_labels:
+        all_labels = list(set(list(labels)))
+        all_labels.sort()
+
     for i, (node_id, member_ids) in enumerate(graph["nodes"].items()):
         node_id_to_num[node_id] = i
         # c = _color_function(member_ids, color_function)
         c = _get_max_label_color_idx(labels[member_ids], all_labels, colors)
         t = _type_node()
         s = _size_node(member_ids)
-        tt = _format_tooltip(env, member_ids, custom_tooltips, X, X_names, lens, lens_names, labels, colors, node_id)
+        tt = _format_tooltip(env, member_ids, custom_tooltips, X, X_names, lens, lens_names, labels, all_labels colors, node_id)
 
         n = {"id": "",
              "name": node_id,
@@ -109,7 +112,7 @@ def _get_color_idx(max_label, all_labels, colors):
     return idx
 
 def _format_tooltip(env, member_ids, custom_tooltips, X,
-                    X_names, lens, lens_names, labels, colors, node_ID):
+                    X_names, lens, lens_names, labels, all_labels, colors, node_ID):
     # TODO: Allow customization in the form of aggregate per node and per entry in node.
     # TODO: Allow users to turn off tooltip completely.
 
@@ -122,8 +125,6 @@ def _format_tooltip(env, member_ids, custom_tooltips, X,
         member_ids, lens, lens_names)
     cluster_stats = _format_cluster_statistics(member_ids, X, X_names)
 
-    all_labels = list(set(list(labels)))
-    all_labels.sort()
     histogram = build_histogram(labels[member_ids], all_labels, colors)
 
     tooltip = env.get_template('cluster_tooltip.html').render(
@@ -164,9 +165,10 @@ def build_histogram(data, all_labels, colors):
     return histogram
 
 
-def graph_data_distribution(labels, colors):
-    all_labels = list(set(list(labels)))
-    all_labels.sort()
+def graph_data_distribution(labels, all_labels, colors):
+    if not all_labels:
+        all_labels = list(set(list(labels)))
+        all_labels.sort()
 
     histogram = build_histogram(labels, all_labels, colors)
     return histogram
