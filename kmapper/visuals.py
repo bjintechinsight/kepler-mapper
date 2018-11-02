@@ -263,7 +263,7 @@ def _format_projection_statistics(member_ids, lens, lens_names):
 
 def _size_node(member_ids):
     # increase the node size for better visualiztion of color
-    return int(np.log(len(member_ids) + 1) + 1) + 5
+    return int(np.log(len(member_ids) + 1) + 1) + 2
 
 
 def _type_node():
