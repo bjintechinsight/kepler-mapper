@@ -151,7 +151,7 @@ def build_histogram(data, all_labels, colors):
             height = int(((bar / max_bucket_value) * 100) + 1)
             # perc = round((bar / sum_bucket_value) * 100., 1)
         else:
-            height = 0
+            height = int(1)
 
         color = _get_color_idx(l, all_labels, colors)
         color = palette[color]
@@ -159,7 +159,7 @@ def build_histogram(data, all_labels, colors):
         histogram.append({
             'height': height,
             'label': l,
-            'color': color
+            'color': color,
         })
     return histogram
 
