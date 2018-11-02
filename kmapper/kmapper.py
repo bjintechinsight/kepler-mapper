@@ -440,7 +440,7 @@ class KeplerMapper(object):
                   graph,
                   labels=None,
                   labels_name=None,
-                  color=None,
+                  colors=None,
                   custom_tooltips=None,
                   custom_meta=None,
                   path_html="mapper_visualization_output.html",
